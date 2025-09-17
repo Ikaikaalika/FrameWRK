@@ -1,0 +1,22 @@
+[project]
+name = "ai-starter"
+version = "0.2.0"
+description = "Production-grade AI app starter (FastAPI + Qdrant + Postgres)"
+authors = [{name="Tyler"}]
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.30.0",
+  "pydantic>=2.8.0",
+  "httpx>=0.27.0",
+  "qdrant-client>=1.10.0",
+  "numpy>=1.26.0",
+  "psycopg2-binary>=2.9.9",
+  "python-dotenv>=1.0.1",
+  "tenacity>=8.5.0",
+  "pytest>=8.2.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["app", "tests"]
+addopts = "-q"

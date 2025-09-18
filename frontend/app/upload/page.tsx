@@ -10,19 +10,23 @@ export default function Upload() {
 
   function handleFiles(list: FileList | null) {
     if (!list) return;
-    const mdFiles = Array.from(list).filter((file) => file.name.endsWith('.md'));
-    if (!mdFiles.length) {
-      setError('Only markdown (.md) files are supported right now.');
+    const allowedExtensions = ['.md', '.txt', '.json'];
+    const supported = Array.from(list).filter((file) =>
+      allowedExtensions.some((ext) => file.name.toLowerCase().endsWith(ext)) ||
+      ['text/markdown', 'text/plain', 'application/json'].includes(file.type)
+    );
+    if (!supported.length) {
+      setError('Please upload .md, .txt, or .json files.');
       return;
     }
-    setFiles(mdFiles);
+    setFiles(supported);
     setStatus(null);
     setError(null);
   }
 
   async function handleIngest() {
     if (!files.length) {
-      setError('Select at least one markdown file to ingest.');
+      setError('Select at least one supported file (.md, .txt, .json) to ingest.');
       return;
     }
 
@@ -50,7 +54,7 @@ export default function Upload() {
     <section>
       <header className="card">
         <h2>Upload & ingest runbooks</h2>
-        <p className="form-helper">Drop markdown files to keep the vector store synced with your latest playbooks.</p>
+        <p className="form-helper">Drop markdown, plain-text, or JSON notes to keep the vector store synced with your latest playbooks.</p>
       </header>
 
       <div className="card" style={{ gap: '1.4rem' }}>
@@ -59,7 +63,7 @@ export default function Upload() {
           onDragOver={(event) => event.preventDefault()}
           onDrop={onDrop}
         >
-          <strong>Drag & drop .md files</strong>
+          <strong>Drag & drop .md / .txt / .json files</strong>
           <span className="form-helper">or</span>
           <label className="btn secondary" htmlFor="file-input" role="button" tabIndex={0}>
             Browse files
@@ -67,7 +71,7 @@ export default function Upload() {
           <input
             id="file-input"
             type="file"
-            accept=".md,text/markdown"
+            accept=".md,.txt,.json,text/markdown,text/plain,application/json"
             multiple
             style={{ display: 'none' }}
             onChange={(event) => handleFiles(event.target.files)}

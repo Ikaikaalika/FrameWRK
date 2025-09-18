@@ -49,6 +49,21 @@ export default function OpsCommand() {
     return dashboard.schedule.slice(0, 5);
   }, [dashboard]);
 
+  const sedationRatio = useMemo(() => {
+    if (!dashboard?.meta.total_surgeries) return 0;
+    return Math.min(100, Math.round((dashboard.meta.total_sedation_cases / dashboard.meta.total_surgeries) * 100));
+  }, [dashboard]);
+
+  const highestLoad = useMemo(() => {
+    if (!dashboard) return null;
+    return dashboard.locations.slice().sort((a, b) => b.surgeries_today - a.surgeries_today)[0] ?? null;
+  }, [dashboard]);
+
+  const riskCenters = useMemo(() => {
+    if (!dashboard) return [];
+    return dashboard.locations.filter((loc) => loc.status === 'at-risk');
+  }, [dashboard]);
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
@@ -68,10 +83,22 @@ export default function OpsCommand() {
   return (
     <section>
       <header className="card">
-        <h2>Nuvia Ops Command Center</h2>
-        <p className="form-helper">
-          Track surgical volume across centers and spin up procedure-specific checklists ahead of the morning huddle.
-        </p>
+        <div style={{ display: 'grid', gap: '0.8rem' }}>
+          <span className="badge">Daily surgical readiness</span>
+          <h2>Nuvia Ops Command Center</h2>
+          <p className="form-helper">
+            Track surgical volume across centers, watch sedation load, and spin up procedure-specific checklists ahead of the morning huddle.
+          </p>
+        </div>
+        {highestLoad && (
+          <div className="callout">
+            <strong>{highestLoad.location}</strong>
+            <span>
+              Leading the day with {highestLoad.surgeries_today} surgeries and {highestLoad.sedation_cases} sedation cases.
+              Ensure backup implant kits and anesthesia coverage are staged.
+            </span>
+          </div>
+        )}
       </header>
 
       {loading ? (
@@ -103,19 +130,51 @@ export default function OpsCommand() {
             </div>
           </div>
 
+          <div className="metric-grid">
+            <div className="metric">
+              <span>Sedation load</span>
+              <strong>{sedationRatio}%</strong>
+              <div className="progress-track" aria-hidden>
+                <div className="progress-bar" style={{ width: `${sedationRatio}%` }} />
+              </div>
+              <small className="form-helper">Sedation cases vs total surgeries</small>
+            </div>
+            <div className="metric">
+              <span>At-risk centers</span>
+              <strong>{riskCenters.length}</strong>
+              <small className="form-helper">Needs escalation before go-live</small>
+            </div>
+            <div className="metric">
+              <span>Checklist queue</span>
+              <strong>{result ? 1 : 0}</strong>
+              <small className="form-helper">Generated this session</small>
+            </div>
+          </div>
+
           <div className="feature-grid">
             {dashboard.locations.map((loc) => (
               <div key={loc.location} className="card">
-                <h3>{loc.location}</h3>
-                <p className="form-helper">Lead: {loc.team_lead}</p>
-                <ul style={{ margin: 0, paddingLeft: '1.1rem', color: 'var(--text-secondary)' }}>
-                  <li>{loc.surgeries_today} surgeries today</li>
-                  <li>{loc.sedation_cases} sedation cases</li>
-                  <li>{loc.risk_patients} risk review(s)</li>
-                </ul>
-                <span className="badge" style={{ marginTop: '0.8rem', width: 'fit-content' }}>
-                  Status: {loc.status}
-                </span>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.6rem' }}>
+                  <div>
+                    <h3>{loc.location}</h3>
+                    <p className="form-helper">Lead: {loc.team_lead}</p>
+                  </div>
+                  <span className={`status-pill ${loc.status}`}>{loc.status}</span>
+                </div>
+                <div className="metric-grid" style={{ marginTop: '0.6rem' }}>
+                  <div className="metric" style={{ padding: '0.6rem 0.8rem' }}>
+                    <span>Surgeries</span>
+                    <strong>{loc.surgeries_today}</strong>
+                  </div>
+                  <div className="metric" style={{ padding: '0.6rem 0.8rem' }}>
+                    <span>Sedation</span>
+                    <strong>{loc.sedation_cases}</strong>
+                  </div>
+                  <div className="metric" style={{ padding: '0.6rem 0.8rem' }}>
+                    <span>Risk pts</span>
+                    <strong>{loc.risk_patients}</strong>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -123,31 +182,17 @@ export default function OpsCommand() {
           <div className="card" style={{ display: 'grid', gap: '1.2rem' }}>
             <h3>Upcoming surgeries</h3>
             {upcomingCases.length ? (
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Patient</th>
-                      <th>Procedure</th>
-                      <th>Location</th>
-                      <th>Surgeon</th>
-                      <th>Stage</th>
-                      <th>Start</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {upcomingCases.map((item) => (
-                      <tr key={`${item.patient}-${item.start}`}>
-                        <td>{item.patient}</td>
-                        <td>{item.procedure}</td>
-                        <td>{item.location}</td>
-                        <td>{item.surgeon}</td>
-                        <td>{item.stage}</td>
-                        <td>{new Date(item.start).toLocaleString()}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="timeline">
+                {upcomingCases.map((item) => (
+                  <div key={`${item.patient}-${item.start}`} className="timeline-item">
+                    <strong>{item.patient} — {item.procedure}</strong>
+                    <div className="form-helper">
+                      {new Date(item.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {item.location}
+                    </div>
+                    <div className="form-helper">Surgeon: {item.surgeon} • Stage: {item.stage}</div>
+                    <div className="form-helper">Notes: {item.notes}</div>
+                  </div>
+                ))}
               </div>
             ) : (
               <div className="empty-state">No scheduled cases in the data set.</div>

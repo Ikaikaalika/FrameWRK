@@ -1,10 +1,19 @@
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from .routers import health, llm, rag, admin, rag_chat, ops
 from .storage.db import get_conn
 from psycopg2.extras import Json
 import logging
 
 app = FastAPI(title="AI App Starter", version="0.2.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def init_db():

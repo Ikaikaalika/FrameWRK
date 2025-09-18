@@ -45,7 +45,7 @@ ollama pull nomic-embed-text
 # 1) Configure env (points backend + frontend at the right services)
 cp .env.example .env
 # edit if you want OpenAI/Anthropic keys; defaults work with Ollama
-# note: the frontend falls back to same-origin in the browser; keep `NEXT_PUBLIC_API_URL=http://backend:8000` for Docker, override only if you host the API elsewhere
+# note: frontend uses `NEXT_PUBLIC_API_URL` in the browser (defaults to http://localhost:8000) and `API_INTERNAL_URL` on the server (defaults to http://backend:8000 for Docker)
 
 # 2) Start the platform
 docker compose up --build

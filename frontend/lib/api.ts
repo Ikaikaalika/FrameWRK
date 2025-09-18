@@ -1,15 +1,20 @@
-const RAW_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
-const isServer = typeof window === 'undefined';
+const PUBLIC_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
+const INTERNAL_BASE = process.env.API_INTERNAL_URL?.replace(/\/$/, '') || '';
 
-let API_BASE = RAW_BASE;
-if (!API_BASE) {
-  API_BASE = isServer ? 'http://backend:8000' : '';
-} else if (!isServer && /backend:\d+/.test(API_BASE)) {
-  // Inside the browser we can't resolve docker service names — fall back to same-origin paths
-  API_BASE = '';
-}
+const buildUrl = (path: string) => {
+  if (typeof window === 'undefined') {
+    const base = INTERNAL_BASE || PUBLIC_BASE || 'http://backend:8000';
+    return `${base}${path}`;
+  }
 
-const buildUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
+  if (PUBLIC_BASE) {
+    return `${PUBLIC_BASE}${path}`;
+  }
+
+  const { protocol, hostname, port } = window.location;
+  const apiPort = port === '3000' || port === '' ? '8000' : port;
+  return `${protocol}//${hostname}:${apiPort}${path}`;
+};
 
 export async function ragQuery(question: string){
   const r = await fetch(buildUrl('/rag/query'), {

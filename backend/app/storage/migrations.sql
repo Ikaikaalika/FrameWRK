@@ -5,3 +5,13 @@ CREATE TABLE IF NOT EXISTS api_logs (
   response_json JSONB,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS ops_generated_tasks (
+  id SERIAL PRIMARY KEY,
+  patient_name TEXT NOT NULL,
+  task TEXT NOT NULL,
+  owner TEXT NOT NULL,
+  due_at TIMESTAMP,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);

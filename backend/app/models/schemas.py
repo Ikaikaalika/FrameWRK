@@ -69,6 +69,19 @@ class OpsInventoryAlert(BaseModel):
     par_level: int
 
 
+class OpsFollowUpItem(BaseModel):
+    patient: str
+    type: str
+    due: str
+    status: str
+
+
+class OpsSedationTrendPoint(BaseModel):
+    day: str
+    sedation_cases: int
+    total_cases: int
+
+
 class OpsDashboardMeta(BaseModel):
     total_surgeries: int
     total_sedation_cases: int
@@ -82,6 +95,8 @@ class OpsDashboardResponse(BaseModel):
     schedule: List[OpsScheduleItem]
     tasks: List[OpsTaskItem]
     inventory_alerts: List[OpsInventoryAlert]
+    followups: List[OpsFollowUpItem]
+    sedation_trend: List[OpsSedationTrendPoint]
 
 
 class OpsChecklistRequest(BaseModel):
@@ -96,3 +111,13 @@ class OpsChecklistResponse(BaseModel):
     title: str
     checklist: List[str]
     follow_up: List[str]
+
+
+class OpsGeneratedTask(BaseModel):
+    id: int
+    patient_name: str
+    task: str
+    owner: str
+    due_at: Optional[str]
+    status: str
+    created_at: Optional[str]

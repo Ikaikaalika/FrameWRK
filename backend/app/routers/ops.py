@@ -5,6 +5,7 @@ from ..models.schemas import (
     OpsChecklistRequest,
     OpsChecklistResponse,
     OpsDashboardResponse,
+    OpsGeneratedTask,
 )
 from ..services.ops_service import OpsService
 from ..services.llm_provider import LLMProvider
@@ -24,3 +25,8 @@ async def ops_checklist(
     llm: LLMProvider = Depends(get_llm_provider),
 ):
     return await service.generate_checklist(payload.dict(), llm)
+
+
+@router.get("/generated-tasks", response_model=list[OpsGeneratedTask])
+async def ops_generated_tasks(service: OpsService = Depends(get_ops_service)):
+    return service.generated_tasks()

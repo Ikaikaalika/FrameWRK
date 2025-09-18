@@ -1,12 +1,15 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import {
   ChecklistPayload,
   ChecklistResponse,
   createChecklist,
   getOpsDashboard,
+  getGeneratedTasks,
   OpsDashboard,
+  GeneratedTask,
 } from '../../lib/api';
 
 const sedationOptions = ['IV Sedation', 'Oral Sedation', 'Local Only'];
@@ -17,6 +20,7 @@ export default function OpsCommand() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ChecklistResponse | null>(null);
+  const [generatedTasks, setGeneratedTasks] = useState<GeneratedTask[]>([]);
 
   const [payload, setPayload] = useState<ChecklistPayload>({
     patient_name: 'Laura Ortiz',
@@ -35,6 +39,8 @@ export default function OpsCommand() {
         if (data.locations.length) {
           setPayload((prev) => ({ ...prev, location: data.locations[0].location }));
         }
+        const generated = await getGeneratedTasks();
+        setGeneratedTasks(generated);
       } catch (err) {
         console.error(err);
         setError('Unable to load the operations dashboard.');
@@ -71,6 +77,8 @@ export default function OpsCommand() {
       setResult(null);
       setError(null);
       const checklist = await createChecklist(payload);
+      const tasks = await getGeneratedTasks();
+      setGeneratedTasks(tasks);
       setResult(checklist);
     } catch (err) {
       console.error(err);
@@ -151,6 +159,28 @@ export default function OpsCommand() {
             </div>
           </div>
 
+          <div className="card" style={{ display: 'grid', gap: '1rem' }}>
+            <h3>Sedation trend (last 5 days)</h3>
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={dashboard.sedation_trend}>
+                <defs>
+                  <linearGradient id="sedationColor" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#818cf8" stopOpacity={0.6} />
+                    <stop offset="95%" stopColor="#818cf8" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
+                <XAxis dataKey="day" stroke="rgba(148, 163, 184, 0.6)" />
+                <YAxis allowDecimals={false} stroke="rgba(148, 163, 184, 0.6)" />
+                <Tooltip
+                  contentStyle={{ background: 'rgba(15,23,42,0.92)', borderRadius: 12, border: '1px solid rgba(129,140,248,0.4)' }}
+                />
+                <Area type="monotone" dataKey="sedation_cases" stroke="#818cf8" fill="url(#sedationColor)" strokeWidth={2} />
+                <Area type="monotone" dataKey="total_cases" stroke="#38bdf8" fillOpacity={0} strokeWidth={1} strokeDasharray="4 4" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
           <div className="feature-grid">
             {dashboard.locations.map((loc) => (
               <div key={loc.location} className="card">
@@ -226,6 +256,35 @@ export default function OpsCommand() {
                   <div className="form-helper">On-hand: {alert.on_hand} • Par: {alert.par_level}</div>
                 </div>
               ))}
+            </div>
+
+            <div className="card" style={{ display: 'grid', gap: '1rem' }}>
+              <h3>Follow-up queue</h3>
+              {dashboard.followups.map((item) => (
+                <div key={`${item.patient}-${item.type}`} className="chat-message__bubble">
+                  <strong>{item.patient}</strong>
+                  <div className="form-helper">Type: {item.type}</div>
+                  <div className="form-helper">Due: {new Date(item.due).toLocaleString()}</div>
+                  <div className="form-helper">Status: {item.status}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="card" style={{ display: 'grid', gap: '1rem' }}>
+              <h3>Generated tasks</h3>
+              {generatedTasks.length ? (
+                generatedTasks.slice(0, 5).map((task) => (
+                  <div key={task.id} className="chat-message__bubble" style={{ background: 'rgba(17,24,39,0.9)' }}>
+                    <strong>{task.task}</strong>
+                    <div className="form-helper">Patient: {task.patient_name}</div>
+                    <div className="form-helper">Owner: {task.owner}</div>
+                    <div className="form-helper">Due: {task.due_at ? new Date(task.due_at).toLocaleString() : 'TBD'}</div>
+                    <div className="form-helper">Status: {task.status}</div>
+                  </div>
+                ))
+              ) : (
+                <div className="empty-state">Generated tasks will appear here after checklist runs.</div>
+              )}
             </div>
 
             <div className="card" style={{ display: 'grid', gap: '1.2rem' }}>

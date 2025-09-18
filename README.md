@@ -17,6 +17,7 @@ This hub tackles that end-to-end: ingest docs → embed → search → reason �
 - **Request telemetry**: every call is stored in Postgres; `/admin` visualizes route volume so we can spot drift or abuse.
 - **Provider resilience**: FastAPI adapters speak OpenAI, Anthropic, **and local Ollama**. If the network dies, we fall back to deterministic heuristics instead of 500s.
 - **Nuvia Ops Command Center**: `/ops` aggregates surgeries, sedation load, inventory alerts, and lets coordinators auto-generate pre-op checklists tailored to each case.
+- **Ops telemetry extras**: `/ops` now tracks follow-up queues, sedation trendlines, and auto-generated tasks produced from checklist runs.
 
 ## Architecture
 ```

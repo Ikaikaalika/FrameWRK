@@ -32,8 +32,36 @@ class RAGPipeline:
         qvec = await self.embeddings.embed([question])
         results = await self.store.search(qvec[0], k=k)
         logger.debug("retrieved %d context chunks", len(results))
-        context = "\n\n".join([f"- {r.payload.get('text','')}" for r in results])
-        prompt = f"You are a helpful assistant. Use the context to answer. If unknown, say you don't know.\n\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
+        keywords = {token for token in question.lower().split() if len(token) > 3}
+        snippet_bundle = []
+        for r in results:
+            meta_bits = []
+            if title := r.payload.get("title"):
+                meta_bits.append(f"Title: {title}")
+            if location := r.payload.get("location"):
+                meta_bits.append(f"Location: {location}")
+            if stage := r.payload.get("procedure_stage"):
+                meta_bits.append(f"Stage: {stage}")
+            if risk := r.payload.get("risk_level"):
+                meta_bits.append(f"Risk: {risk}")
+            header = " | ".join(meta_bits)
+            text = r.payload.get("text", "")
+            snippet_text = f"{header}\n{text}" if header else text
+            lower_text = snippet_text.lower()
+            match_score = sum(1 for kw in keywords if kw in lower_text)
+            snippet_bundle.append((match_score, snippet_text))
+
+        snippet_bundle.sort(key=lambda item: item[0], reverse=True)
+        snippets = [f"Snippet {idx + 1} (score={score}):\n{text}" for idx, (score, text) in enumerate(snippet_bundle)]
+        context = "\n\n".join(snippets)
+        prompt = (
+            "You are Nuvia Smiles' operations co-pilot. Respond using only the provided context. "
+            "If at least one context snippet is provided, craft the best grounded summary you can. "
+            "Only respond with 'I don't know' when the context list is empty. "
+            "Prefer concise checklists with numbered steps when listing actions, and highlight sedation or inventory risks explicitly."
+            "Always prioritize information from Snippet 1 unless it is irrelevant."
+            "\n\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
+        )
         answer = await self.llm.complete_text(prompt, max_tokens=256)
         logger.debug("LLM answered query | chars=%d", len(answer))
         return answer, results

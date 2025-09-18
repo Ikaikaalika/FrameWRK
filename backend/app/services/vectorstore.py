@@ -1,4 +1,4 @@
-from typing import List, Any
+from typing import List, Any, Dict
 import logging
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, Distance, VectorParams
@@ -24,7 +24,11 @@ class VectorStore:
             logger.debug("qdrant collection %s already exists", self.collection)
 
     async def upsert_texts(self, texts: List[str], embeddings: np.ndarray):
-        points = [PointStruct(id=i, vector=embeddings[i].tolist(), payload={"text": texts[i]}) for i in range(len(texts))]
+        points = []
+        for i, text in enumerate(texts):
+            payload: Dict[str, Any] = {"text": text}
+            payload.update(self._extract_metadata(text))
+            points.append(PointStruct(id=i, vector=embeddings[i].tolist(), payload=payload))
         logger.debug("upserting %d vectors into %s", len(points), self.collection)
         self.client.upsert(collection_name=self.collection, points=points)
 
@@ -43,3 +47,26 @@ class VectorStore:
                 logger.warning("qdrant collection %s missing during search", self.collection)
                 return []
             raise
+
+    def _extract_metadata(self, text: str) -> Dict[str, Any]:
+        metadata: Dict[str, Any] = {}
+        for line in text.splitlines():
+            if not line.strip():
+                break
+            if ":" not in line:
+                continue
+            key, value = line.split(":", 1)
+            normalized = key.strip().lower()
+            value = value.strip()
+            match normalized:
+                case "title":
+                    metadata["title"] = value
+                case "location":
+                    metadata["location"] = value
+                case "procedure stage":
+                    metadata["procedure_stage"] = value
+                case "risk level":
+                    metadata["risk_level"] = value
+        if metadata:
+            logger.debug("extracted metadata %s", metadata)
+        return metadata

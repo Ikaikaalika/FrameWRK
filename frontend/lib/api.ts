@@ -103,6 +103,17 @@ export type OpsDashboard = {
     on_hand: number;
     par_level: number;
   }>;
+  followups: Array<{
+    patient: string;
+    type: string;
+    due: string;
+    status: string;
+  }>;
+  sedation_trend: Array<{
+    day: string;
+    sedation_cases: number;
+    total_cases: number;
+  }>;
 };
 
 export async function getOpsDashboard(){
@@ -133,4 +144,20 @@ export async function createChecklist(payload: ChecklistPayload){
   });
   if (!r.ok) throw new Error('Failed to generate checklist');
   return (await r.json()) as ChecklistResponse;
+}
+
+export type GeneratedTask = {
+  id: number;
+  patient_name: string;
+  task: string;
+  owner: string;
+  due_at: string | null;
+  status: string;
+  created_at: string | null;
+};
+
+export async function getGeneratedTasks(){
+  const r = await fetch(buildUrl('/ops/generated-tasks'));
+  if (!r.ok) throw new Error('Failed to load generated tasks');
+  return (await r.json()) as GeneratedTask[];
 }

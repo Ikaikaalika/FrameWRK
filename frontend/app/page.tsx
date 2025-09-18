@@ -1,18 +1,56 @@
-export default function Home(){
+import Link from 'next/link';
+
+const features = [
+  {
+    title: 'RAG workspace',
+    description: 'Ground questions in your latest runbooks with Qdrant-powered semantic search.',
+    href: '/chat',
+  },
+  {
+    title: 'One-click ingestion',
+    description: 'Drop markdown playbooks or incident postmortems and watch embeddings stay in sync.',
+    href: '/upload',
+  },
+  {
+    title: 'Operational telemetry',
+    description: 'Trace every LLM request in Postgres and visualize usage trends inside the Admin view.',
+    href: '/admin',
+  },
+  {
+    title: 'Provider flexibility',
+    description: 'Swap between OpenAI, Anthropic, or local Ollama without touching business logic.',
+    href: '/chat',
+  },
+];
+
+export default function Home() {
   return (
-    <main>
-      <div className="card">
-        <h1>AI App Starter</h1>
-        <p>Production-grade stack with RAG, classification, summarization, and provider-agnostic LLM adapters.</p>
+    <section>
+      <div className="hero">
+        <span className="badge">Production ready AI stack</span>
+        <h1>Ship incident-ready automations with confidence.</h1>
+        <p>
+          This hub ingests your operational knowledge, keeps the vector store fresh, and exposes reusable LLM
+          utilities for classification, summarization, and retrieval-augmented chat.
+        </p>
+        <div className="actions">
+          <Link className="btn" href="/chat">
+            Open RAG chat
+          </Link>
+          <Link className="btn secondary" href="/upload">
+            Ingest runbooks
+          </Link>
+        </div>
       </div>
-      <div className="grid two">
-        <a className="card" href="/chat"><h3>Chat (RAG)</h3><p>Ask questions grounded in your documents.</p></a>
-        <a className="card" href="/upload"><h3>Upload</h3><p>Upload markdown to ingest into vector search.</p></a>
+
+      <div className="feature-grid">
+        {features.map((feature) => (
+          <Link className="card" key={feature.title} href={feature.href}>
+            <h3>{feature.title}</h3>
+            <p>{feature.description}</p>
+          </Link>
+        ))}
       </div>
-      <div className="card">
-        <a href="/admin"><h3>Admin</h3></a>
-        <p>View recent API logs and basic metrics.</p>
-      </div>
-    </main>
+    </section>
   );
 }

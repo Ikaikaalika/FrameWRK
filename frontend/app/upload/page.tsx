@@ -1,36 +1,111 @@
 'use client';
-import { useState } from 'react';
+import { DragEvent, useState } from 'react';
+import { ingestDocs } from '../../lib/api';
 
-export default function Upload(){
-  const [files, setFiles] = useState<FileList|null>(null);
-  const [status, setStatus] = useState('');
+export default function Upload() {
+  const [files, setFiles] = useState<File[]>([]);
+  const [status, setStatus] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  async function ingest(){
-    if(!files || files.length===0){ setStatus('Pick at least one .md file'); return; }
-    const texts: string[] = [];
-    for(const f of Array.from(files)){
-      const txt = await f.text();
-      texts.push(txt);
+  function handleFiles(list: FileList | null) {
+    if (!list) return;
+    const mdFiles = Array.from(list).filter((file) => file.name.endsWith('.md'));
+    if (!mdFiles.length) {
+      setError('Only markdown (.md) files are supported right now.');
+      return;
     }
-    const r = await fetch('http://localhost:8000/rag/ingest', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({texts})
-    });
-    const data = await r.json();
-    setStatus(`Ingested: ${data.ingested}`);
+    setFiles(mdFiles);
+    setStatus(null);
+    setError(null);
+  }
+
+  async function handleIngest() {
+    if (!files.length) {
+      setError('Select at least one markdown file to ingest.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const texts = await Promise.all(files.map((file) => file.text()));
+      const res = await ingestDocs(texts);
+      const ingested = res.ingested ?? texts.length;
+      setStatus(`Ingested ${ingested} document${ingested === 1 ? '' : 's'}.`);
+    } catch (err) {
+      console.error(err);
+      setError('Failed to ingest documents — ensure the backend is running.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function onDrop(event: DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    handleFiles(event.dataTransfer.files);
   }
 
   return (
-    <main>
-      <div className="card">
-        <h2>Upload & Ingest</h2>
-        <p>Select one or more <b>.md</b> files to ingest into the vector DB.</p>
-        <input type="file" multiple accept=".md,text/markdown" onChange={e=>setFiles(e.target.files)} />
-        <div style={{marginTop:12}}>
-          <button className="btn" onClick={ingest}>Ingest</button>
+    <section>
+      <header className="card">
+        <h2>Upload & ingest runbooks</h2>
+        <p className="form-helper">Drop markdown files to keep the vector store synced with your latest playbooks.</p>
+      </header>
+
+      <div className="card" style={{ gap: '1.4rem' }}>
+        <div
+          className="upload-dropzone"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={onDrop}
+        >
+          <strong>Drag & drop .md files</strong>
+          <span className="form-helper">or</span>
+          <label className="btn secondary" htmlFor="file-input" role="button" tabIndex={0}>
+            Browse files
+          </label>
+          <input
+            id="file-input"
+            type="file"
+            accept=".md,text/markdown"
+            multiple
+            style={{ display: 'none' }}
+            onChange={(event) => handleFiles(event.target.files)}
+          />
         </div>
-        <p>{status}</p>
+
+        {files.length > 0 ? (
+          <div className="file-list">
+            {files.map((file) => (
+              <span key={file.name} className="file-pill">
+                {file.name}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">No files selected yet.</div>
+        )}
+
+        {status && <span className="feedback success">{status}</span>}
+        {error && <span className="feedback error">{error}</span>}
+
+        <div className="actions">
+          <button className="btn" type="button" onClick={handleIngest} disabled={loading || !files.length}>
+            {loading ? 'Ingesting…' : 'Ingest documents'}
+          </button>
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={() => {
+              setFiles([]);
+              setStatus(null);
+              setError(null);
+            }}
+          >
+            Clear selection
+          </button>
+        </div>
       </div>
-    </main>
+    </section>
   );
 }

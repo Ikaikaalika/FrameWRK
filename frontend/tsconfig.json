@@ -6,10 +6,17 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
     "noEmit": true,
     "strict": true,
+    "incremental": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {},
+    "plugins": [{ "name": "next" }]
   },
-  "include": ["app", "components", "lib"]
+  "include": ["app", "components", "lib", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }

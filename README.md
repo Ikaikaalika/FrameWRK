@@ -1,79 +1,84 @@
-# AI App Starter — FastAPI + Next.js + Qdrant + Postgres (+ Upgraded UI) 
+# AI Ops Runbook Hub
 
-A production-grade, modular starter that demonstrates how to go from **business problem → code → AI-powered solution**.
+Turn ops tribal knowledge into a durable, AI-assisted workflow. This project shows how I would take a real incident-response problem, pair it with LLMs, and ship a production-ready tool that automation engineers can run today.
 
-**What’s included**
-- **FastAPI** backend with clean service layers and provider-agnostic **LLM adapters** (OpenAI, Anthropic, **Ollama**).
-- **RAG** pipeline (ingest → embed → vector search → answer) with **Qdrant**.
-- **Classification** and **Summarization** APIs.
-- **Next.js (TS)** front end with **Chat (RAG)**, **Upload & Ingest**, and **Admin dashboard** (Recharts).
-- **Postgres** for logs & traces; **Docker Compose** to run everything locally.
-- **Terraform** or **one-liner bash** to deploy on **AWS EC2**.
-- **Pytest** tests and **.env.example**/**.env.aws.example** for fast start.
+## Why It Exists
+Site-reliability and automation teams swim in wikis, Slack threads, and brittle scripts. During an incident you need:
+- answers grounded in the latest runbooks (not hallucinations)
+- the ability to classify & summarize noisy alerts
+- an auditable trail for compliance and continuous improvement
+
+This hub tackles that end-to-end: ingest docs → embed → search → reason → log. It demonstrates I can go from business problem to shipping code, not just prompt tinkering.
+
+## What You Get
+- **Knowledge ingestion & RAG**: markdown runbooks drop in `scripts/seed_docs`, get embedded via Ollama/OpenAI, and land in Qdrant for semantic lookups.
+- **Ops-ready chat**: `/chat` UI (Next.js) gives responders contextual answers plus citations.
+- **LLM utilities**: `/llm/classify` & `/llm/summarize` expose reusable APIs for ticket triage or incident recaps.
+- **Request telemetry**: every call is stored in Postgres; `/admin` visualizes route volume so we can spot drift or abuse.
+- **Provider resilience**: FastAPI adapters speak OpenAI, Anthropic, **and local Ollama**. If the network dies, we fall back to deterministic heuristics instead of 500s.
+
+## Architecture
+```
+┌─────────┐      ┌─────────┐        ┌────────────┐        ┌──────────────┐
+│Frontend │◀────▶│ Backend │◀──────▶│ Qdrant      │        │ Postgres      │
+│Next.js  │      │ FastAPI │        │ Vector DB   │        │ Request Logs  │
+└─────────┘      └─────────┘        └────────────┘        └──────────────┘
+       ▲                ▲                   ▲                      ▲
+       │                │                   │                      │
+       ▼                └──────▶ Ollama / OpenAI / Anthropic ◀─────┘
+```
+- **frontend/** – Next.js 14 app with Chat, Upload/Ingest, and Admin pages.
+- **backend/** – FastAPI services (RAG pipeline, LLM abstraction, logging middleware).
+- **qdrant** – stores embeddings + source text.
+- **postgres** – durable log of every API request/response (powering drift detection).
+- **docker-compose.yml** – one command to boot the full stack, including hot-reload mounts for backend/tests.
 
 ## Quickstart (Local)
-
 ```bash
-# 0) Prereq: Docker Desktop
-# 1) Copy env and set keys / provider
-cp .env.example .env
-# 2) Start stack
-docker compose up --build
-# 3) Open
-# UI : http://localhost:3000
-# API: http://localhost:8000/docs
-```
-
-### GPU on Mac (use your local Ollama)
-Install Ollama on macOS and point the backend at it:
-
-```bash
+# 0) Prereqs: Docker Desktop + Ollama (for local inference)
 brew install ollama
-ollama serve &
-ollama pull llama3.1
-# optional embeddings
+ollama serve >/tmp/ollama.log 2>&1 &
+ollama pull llama3.2:3b
 ollama pull nomic-embed-text
 
-# .env
-OLLAMA_BASE_URL=http://host.docker.internal:11434
-OLLAMA_MODEL=llama3.1
-EMBEDDINGS_PROVIDER=ollama
+# 1) Configure env (points backend at the host Ollama daemon)
+cp .env.example .env
+# edit if you want OpenAI/Anthropic keys; defaults work with Ollama
+
+# 2) Start the platform
+docker compose up --build
+# UI:  http://localhost:3000
+# API: http://localhost:8000/docs
+
+# 3) Seed the knowledge base with sample runbooks
+docker compose exec backend bash -lc "python scripts/ingest.py /app/scripts/seed_docs"
+
+# 4) Run backend tests
+docker compose exec backend pytest -q
 ```
 
-### Seed RAG with sample docs
-```bash
-docker compose exec backend bash -lc "python scripts/ingest.py scripts/seed_docs"
-```
+## Key Workflows
+| Task | How | Notes |
+|------|-----|-------|
+| Ask grounded questions | Visit `/chat` or `POST /rag/query` | Answers include the top-matched runbook chunks. |
+| Upload new runbooks | `/upload` UI | Accepts `.md` files; triggers embed + Qdrant upsert. |
+| Classify alerts | `POST /llm/classify` | Provider-agnostic; falls back to rule-based scores if LLM unavailable. |
+| Summarize incidents | `POST /llm/summarize` | Great for daily incident digests or PR columns. |
+| Inspect usage | `/admin` | Shows recent routes + a quick volume chart sourced from Postgres logs. |
 
----
+## Production-Grade Considerations
+- **Logging & traceability** – `backend/app/main.py` middleware stores URL + payload (JSON-safe) per call.
+- **Schema-first contracts** – Pydantic models wrap every request/response, making it trivial to add validation or feature flags.
+- **Offline resilience** – embeddings and LLM layers degrade gracefully to deterministic fallbacks if third-party providers are down.
+- **Testability** – `pytest` suite covers FastAPI routers; Docker compose mounts `backend/tests` so inner-loop TDD is fast.
 
-## UI Pages
-- **/** — overview
-- **/chat** — chat-style RAG with history
-- **/upload** — drag in .md text and ingest
-- **/admin** — logs list + tiny route count chart
+## Roadmap / Next Iterations
+1. **Evaluation harness**: nightly regression checks against golden Q&A pairs, reporting drift in `/admin`.
+2. **Workflow automation**: trigger Jira/Slack hooks once classifications cross thresholds.
+3. **Metadata-aware search**: embed tags (service, severity) to filter answers per on-call team.
+4. **Fine-tuned models**: optional Mistral/Zephyr adapters when GPU budget allows.
 
----
+## Hiring Narrative
+This repo is more than a demo. It shows: clean service boundaries, provider-agnostic LLM usage, vector search, observability, and a real UI — exactly what you asked for. I can walk through the codebase live or ship a Loom demo highlighting ingest → query → monitoring.
 
-## Deploy on AWS
-
-### Option A — Terraform (EC2 + Docker)
-1. Zip this repo and upload to S3 (presigned URL).
-2. In `deploy/aws/terraform`:
-```bash
-terraform init
-terraform apply   -var key_name=YOUR_EC2_KEYPAIR   -var zip_url="https://YOUR-PRESIGNED-URL/ai-app-starter.zip"   -var env_contents="$(cat .env.aws.example)"
-```
-Outputs:
-- UI  → `http://<EC2_PUBLIC_IP>`
-- API → `http://<EC2_PUBLIC_IP>:8000/docs`
-
-### Option B — Existing EC2 (one-liner)
-On Ubuntu 22.04:
-```bash
-sudo bash deploy/aws/scripts/run_on_aws.sh   "https://YOUR-PRESIGNED-URL/ai-app-starter.zip"   "$(cat .env.aws.example)"
-```
-
-**Notes**
-- On AWS, prefer **OpenAI/Anthropic** for inference (Ollama GPU is best on Mac).
-- Lock down security groups and add HTTPS (ALB + ACM) for production.
+Let me know what dataset you’d like to integrate next; I’m ready to hook in your runbooks and extend the automation workflows.

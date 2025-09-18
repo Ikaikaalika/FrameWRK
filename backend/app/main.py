@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request
 from .routers import health, llm, rag, admin, rag_chat
 from .storage.db import get_conn
+from psycopg2.extras import Json
+import logging
 
 app = FastAPI(title="AI App Starter", version="0.2.0")
 
@@ -29,14 +31,18 @@ async def log_requests(request: Request, call_next):
     try:
         conn = get_conn()
         cur = conn.cursor()
+        try:
+            req_payload = json.loads(body.decode("utf-8") or "{}") or None
+        except json.JSONDecodeError:
+            req_payload = None
         cur.execute(
             "INSERT INTO api_logs(route, request_json, response_json) VALUES (%s,%s,%s)",
-            (str(request.url), json.loads(body.decode('utf-8') or "{}"), {})
+            (str(request.url), Json(req_payload), Json(None))
         )
         conn.commit()
         cur.close()
         conn.close()
-    except Exception:
-        pass
+    except Exception as exc:
+        logging.getLogger("api_logs").debug("Failed to log request: %s", exc)
     response.headers["x-runtime"] = f"{elapsed:.3f}s"
     return response

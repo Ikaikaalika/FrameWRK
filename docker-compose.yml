@@ -21,6 +21,8 @@ services:
   backend:
     build: ./backend
     env_file: .env
+    environment:
+      - PYTHONPATH=/app
     depends_on:
       - postgres
       - qdrant
@@ -29,6 +31,7 @@ services:
     volumes:
       - ./scripts:/app/scripts
       - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
 
   frontend:
     build: ./frontend

@@ -1,6 +1,13 @@
 const RAW_BASE = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') || '';
+const isServer = typeof window === 'undefined';
 
-const API_BASE = RAW_BASE || (typeof window === 'undefined' ? 'http://backend:8000' : '');
+let API_BASE = RAW_BASE;
+if (!API_BASE) {
+  API_BASE = isServer ? 'http://backend:8000' : '';
+} else if (!isServer && /backend:\d+/.test(API_BASE)) {
+  // Inside the browser we can't resolve docker service names — fall back to same-origin paths
+  API_BASE = '';
+}
 
 const buildUrl = (path: string) => (API_BASE ? `${API_BASE}${path}` : path);
 

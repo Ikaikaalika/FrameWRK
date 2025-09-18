@@ -43,7 +43,7 @@ class EmbeddingsService:
         except httpx.HTTPError:
             return self._hash_embed(texts)
 
-    def _hash_embed(self, texts: List[str], dim: int = 256) -> np.ndarray:
+    def _hash_embed(self, texts: List[str], dim: int = 768) -> np.ndarray:
         """Produce deterministic bag-of-words embeddings as an offline fallback."""
         vectors = np.zeros((len(texts), dim), dtype="float32")
         for i, text in enumerate(texts):

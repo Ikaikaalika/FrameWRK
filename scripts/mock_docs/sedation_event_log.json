@@ -1,0 +1,33 @@
+{
+  "sedation_event": {
+    "patient_id": "NV-2045",
+    "date": "2025-09-18",
+    "location": "Phoenix Surgery Center",
+    "pre_medications": [
+      {"name": "Midazolam", "dose_mg": 5},
+      {"name": "Ketamine", "dose_mg": 40}
+    ],
+    "airway_risk": "low",
+    "monitoring": {
+      "spo2": "99%",
+      "blood_pressure": "124/78",
+      "heart_rate": 72
+    },
+    "events": [
+      {
+        "timestamp": "08:45",
+        "note": "Patient entered level 3 sedation; maintain IV fluids at 75 ml/hr."
+      },
+      {
+        "timestamp": "09:10",
+        "note": "Transient drop in SpO2 to 93%; adjusted nasal cannula flow."
+      }
+    ],
+    "recovery": {
+      "alderete_score": 9,
+      "discharge_time": "10:15",
+      "escort_verified": true
+    },
+    "follow_up": "Schedule 24-hour sedation safety call and document in CRM."
+  }
+}

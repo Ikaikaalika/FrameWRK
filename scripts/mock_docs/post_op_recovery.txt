@@ -1,0 +1,26 @@
+POST-OPERATIVE RECOVERY PROTOCOL
+--------------------------------
+Location: Austin Surgery Center
+Procedure: Immediate load All-on-4 lower arch
+
+Vitals Monitoring
+- Check blood pressure, pulse, SpO2 every 15 minutes for first hour.
+- Notify anesthesia lead if systolic BP > 160 or SpO2 < 94%.
+
+Bleeding Control
+- Inspect surgical sites for pooling blood every 10 minutes.
+- Reinforce gauze and apply cold compresses as needed.
+
+Pain Management
+- Administer prescribed analgesic (Hydrocodone/APAP 5/325) at T+45 minutes if pain score > 6.
+- Document medication time in EHR and provide take-home dosing sheet.
+
+Patient Education
+- Review soft diet instructions and hygiene protocol.
+- Schedule 48-hour and 1-week follow-up calls in Ops Command Center.
+- Confirm caregiver understands implant protection guidelines (no smoking, no straws).
+
+Discharge Criteria
+- Aldrete score ≥ 9.
+- Minimal bleeding, patient ambulatory with assistance.
+- Escort present and post-op kit issued.

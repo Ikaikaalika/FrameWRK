@@ -2,24 +2,24 @@ import Link from 'next/link';
 
 const features = [
   {
+    title: 'Ops command center',
+    description: 'Monitor surgeries, sedation load, inventory alerts, and generate checklists in one view.',
+    href: '/ops',
+  },
+  {
     title: 'RAG workspace',
-    description: 'Ground questions in your latest runbooks with Qdrant-powered semantic search.',
+    description: 'Ground questions in Nuvia runbooks, lab protocols, and patient communications instantly.',
     href: '/chat',
   },
   {
     title: 'One-click ingestion',
-    description: 'Drop markdown playbooks or incident postmortems and watch embeddings stay in sync.',
+    description: 'Drop updated SOPs or consent packets to keep the knowledge base in sync.',
     href: '/upload',
   },
   {
-    title: 'Operational telemetry',
-    description: 'Trace every LLM request in Postgres and visualize usage trends inside the Admin view.',
+    title: 'LLM observability',
+    description: 'Audit every AI interaction with route-level metrics and JSON logs.',
     href: '/admin',
-  },
-  {
-    title: 'Provider flexibility',
-    description: 'Swap between OpenAI, Anthropic, or local Ollama without touching business logic.',
-    href: '/chat',
   },
 ];
 
@@ -27,15 +27,15 @@ export default function Home() {
   return (
     <section>
       <div className="hero">
-        <span className="badge">Production ready AI stack</span>
-        <h1>Ship incident-ready automations with confidence.</h1>
+        <span className="badge">Built for Nuvia Smiles operations</span>
+        <h1>Coordinate dental implant surgeries with AI copilots.</h1>
         <p>
-          This hub ingests your operational knowledge, keeps the vector store fresh, and exposes reusable LLM
-          utilities for classification, summarization, and retrieval-augmented chat.
+          This hub keeps surgical knowledge fresh, surfaces live metrics across centers, and delivers LLM tools to
+          brief teams, triage cases, and standardize follow-up.
         </p>
         <div className="actions">
-          <Link className="btn" href="/chat">
-            Open RAG chat
+          <Link className="btn" href="/ops">
+            View ops command
           </Link>
           <Link className="btn secondary" href="/upload">
             Ingest runbooks

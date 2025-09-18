@@ -6,6 +6,7 @@ from .services.ollama_provider import OllamaProvider
 from .services.embeddings import EmbeddingsService
 from .services.vectorstore import VectorStore
 from .services.rag_pipeline import RAGPipeline
+from .services.ops_service import OpsService
 
 def get_llm_provider() -> LLMProvider:
     if settings.OPENAI_API_KEY:
@@ -25,3 +26,6 @@ def get_vectorstore() -> VectorStore:
 
 def get_rag_pipeline() -> RAGPipeline:
     return RAGPipeline(embeddings=get_embeddings(), store=get_vectorstore(), llm=get_llm_provider())
+
+def get_ops_service() -> OpsService:
+    return OpsService.from_file()

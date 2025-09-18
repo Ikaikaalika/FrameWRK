@@ -16,6 +16,7 @@ This hub tackles that end-to-end: ingest docs → embed → search → reason �
 - **LLM utilities**: `/llm/classify` & `/llm/summarize` expose reusable APIs for ticket triage or incident recaps.
 - **Request telemetry**: every call is stored in Postgres; `/admin` visualizes route volume so we can spot drift or abuse.
 - **Provider resilience**: FastAPI adapters speak OpenAI, Anthropic, **and local Ollama**. If the network dies, we fall back to deterministic heuristics instead of 500s.
+- **Nuvia Ops Command Center**: `/ops` aggregates surgeries, sedation load, inventory alerts, and lets coordinators auto-generate pre-op checklists tailored to each case.
 
 ## Architecture
 ```
@@ -61,6 +62,7 @@ docker compose exec backend pytest -q
 | Task | How | Notes |
 |------|-----|-------|
 | Ask grounded questions | Visit `/chat` or `POST /rag/query` | Answers include the top-matched runbook chunks. |
+| Monitor Nuvia operations | `/ops` | Live view of surgeries, tasks, inventory, and checklist generator. |
 | Upload new runbooks | `/upload` UI | Accepts `.md` files; triggers embed + Qdrant upsert. |
 | Classify alerts | `POST /llm/classify` | Provider-agnostic; falls back to rule-based scores if LLM unavailable. |
 | Summarize incidents | `POST /llm/summarize` | Great for daily incident digests or PR columns. |

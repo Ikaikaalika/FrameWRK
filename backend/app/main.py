@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-from .routers import health, llm, rag, admin, rag_chat
+from .routers import health, llm, rag, admin, rag_chat, ops
 from .storage.db import get_conn
 from psycopg2.extras import Json
 import logging
@@ -20,6 +20,7 @@ app.include_router(llm.router)
 app.include_router(rag.router)
 app.include_router(admin.router)
 app.include_router(rag_chat.router)
+app.include_router(ops.router)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

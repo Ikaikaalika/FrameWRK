@@ -1,0 +1,93 @@
+{
+  "locations": [
+    {
+      "location": "Phoenix Surgery Center",
+      "surgeries_today": 6,
+      "sedation_cases": 4,
+      "risk_patients": 1,
+      "team_lead": "Dr. K. Morris",
+      "status": "on-track"
+    },
+    {
+      "location": "Salt Lake City Surgery Center",
+      "surgeries_today": 5,
+      "sedation_cases": 3,
+      "risk_patients": 0,
+      "team_lead": "Dr. L. Chen",
+      "status": "watch"
+    },
+    {
+      "location": "Austin Surgery Center",
+      "surgeries_today": 4,
+      "sedation_cases": 2,
+      "risk_patients": 2,
+      "team_lead": "Dr. J. Ramirez",
+      "status": "at-risk"
+    }
+  ],
+  "schedule": [
+    {
+      "patient": "Laura Ortiz",
+      "procedure": "All-on-4 Upper",
+      "start": "2025-09-18T07:30:00-06:00",
+      "location": "Phoenix Surgery Center",
+      "surgeon": "Dr. K. Morris",
+      "stage": "pre-op",
+      "notes": "Awaiting sedation clearance fax"
+    },
+    {
+      "patient": "John Kim",
+      "procedure": "Full Arch Immediate Load",
+      "start": "2025-09-18T08:15:00-06:00",
+      "location": "Salt Lake City Surgery Center",
+      "surgeon": "Dr. L. Chen",
+      "stage": "in-surgery",
+      "notes": "Ensure digital guide is on site"
+    },
+    {
+      "patient": "Emily Carter",
+      "procedure": "All-on-4 Lower",
+      "start": "2025-09-18T09:45:00-06:00",
+      "location": "Austin Surgery Center",
+      "surgeon": "Dr. J. Ramirez",
+      "stage": "post-op",
+      "notes": "Needs pharmacy pickup for antibiotics"
+    }
+  ],
+  "tasks": [
+    {
+      "title": "Verify IV sedation supplies",
+      "owner": "Phoenix Ops",
+      "due": "2025-09-18T06:30:00-06:00",
+      "priority": "high"
+    },
+    {
+      "title": "Confirm digital guides from lab",
+      "owner": "Salt Lake City Ops",
+      "due": "2025-09-18T07:00:00-06:00",
+      "priority": "medium"
+    },
+    {
+      "title": "Schedule 48-hour post-op follow up calls",
+      "owner": "Austin Concierge",
+      "due": "2025-09-18T17:00:00-06:00",
+      "priority": "medium"
+    }
+  ],
+  "inventory_alerts": [
+    {
+      "item": "All-on-4 titanium bar kits",
+      "location": "Austin Surgery Center",
+      "status": "critical",
+      "on_hand": 2,
+      "par_level": 6
+    },
+    {
+      "item": "IV sedation tubing set",
+      "location": "Phoenix Surgery Center",
+      "status": "warning",
+      "on_hand": 8,
+      "par_level": 12
+    }
+  ]
+}

@@ -45,7 +45,7 @@ ollama pull nomic-embed-text
 # 1) Configure env (points backend + frontend at the right services)
 cp .env.example .env
 # edit if you want OpenAI/Anthropic keys; defaults work with Ollama
-# note: NEXT_PUBLIC_API_URL defaults to http://backend:8000 for Docker; set it to http://localhost:8000 when running Next.js outside containers
+# note: frontend auto-detects localhost when running outside Docker — override NEXT_PUBLIC_API_URL only if needed
 
 # 2) Start the platform
 docker compose up --build

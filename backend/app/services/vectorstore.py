@@ -1,6 +1,7 @@
 from typing import List, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, Distance, VectorParams
+from qdrant_client.http.exceptions import UnexpectedResponse
 import numpy as np
 
 class VectorStore:
@@ -21,5 +22,15 @@ class VectorStore:
         self.client.upsert(collection_name=self.collection, points=points)
 
     async def search(self, query_vec: np.ndarray, k: int = 5) -> List[Any]:
-        res = self.client.search(collection_name=self.collection, query_vector=query_vec.tolist(), limit=k, with_payload=True)
-        return res
+        try:
+            res = self.client.search(
+                collection_name=self.collection,
+                query_vector=query_vec.tolist(),
+                limit=k,
+                with_payload=True,
+            )
+            return res
+        except UnexpectedResponse as exc:
+            if exc.status_code == 404:
+                return []
+            raise

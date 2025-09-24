@@ -93,6 +93,9 @@ docker compose exec backend bash -lc "python scripts/offline_bootstrap.py"
 #   http://localhost:3000/ops    → KPI cockpit with pre-seeded tasks/logs
 #   http://localhost:3000/chat   → Ask "How do we prep IV sedation?"
 #   http://localhost:3000/upload → Drop a new .md and re-query instantly
+
+# 5) Bonus: narrate the API story from the terminal.
+python scripts/demo_walkthrough.py --base http://localhost:8000
 ```
 
 Highlights:

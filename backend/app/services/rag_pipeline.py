@@ -61,7 +61,7 @@ class RAGPipeline:
             "Prefer concise checklists with numbered steps when listing actions, and highlight sedation or inventory risks explicitly."
             "Always prioritize information from Snippet 1 unless it is irrelevant."
             "\n\nContext:\n{context}\n\nQuestion: {question}\nAnswer:"
-        )
+        ).format(context=context, question=question)
         answer = await self.llm.complete_text(prompt, max_tokens=256)
         logger.debug("LLM answered query | chars=%d", len(answer))
         return answer, results

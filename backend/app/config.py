@@ -7,8 +7,8 @@ class Settings:
     OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
     OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1")
 
-    EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "openai")
-    EMBEDDINGS_MODEL: str = os.getenv("EMBEDDINGS_MODEL", "text-embedding-3-small")
+    EMBEDDINGS_PROVIDER: str = os.getenv("EMBEDDINGS_PROVIDER", "ollama")
+    EMBEDDINGS_MODEL: str = os.getenv("EMBEDDINGS_MODEL", os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"))
 
     QDRANT_URL: str = os.getenv("QDRANT_URL", "http://qdrant:6333")
     QDRANT_COLLECTION: str = os.getenv("QDRANT_COLLECTION", "docs")

@@ -5,7 +5,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app as fastapi_app
-from app.deps import get_ops_service, get_llm_provider, get_rag_pipeline
+from app.deps import get_ops_service, get_llm_provider, get_rag_pipeline, get_automation_service
 
 
 class FakeCursor:
@@ -101,6 +101,32 @@ class FakePipeline:
         return "answer", results
 
 
+class FakeAutomationService:
+    def __init__(self):
+        self.approved = []
+
+    async def suggest(self, focus: str, count: int = 3):
+        return [
+            {
+                "title": "Automate sedation prep",
+                "problem": "Manual checklist creation",
+                "automation": "Use FastAPI job to create tasks",
+                "impact": "Reduces prep time",
+                "confidence": "high",
+            }
+        ][:count]
+
+    async def implement(self, suggestion):
+        self.approved.append(suggestion)
+        return {
+            "id": 7,
+            "title": suggestion.get("title", "Automation"),
+            "status": "pending",
+            "implementation_plan": {"plan_steps": ["Step"]},
+            "created_at": None,
+        }
+
+
 @pytest.fixture
 def client(monkeypatch):
     fake_db = {"queries": [], "rows": [], "commits": 0, "closed_conns": 0, "closed_cursors": 0}
@@ -114,14 +140,16 @@ def client(monkeypatch):
     ops_service = FakeOpsService()
     pipeline = FakePipeline()
     llm = FakeLLM()
+    automation_service = FakeAutomationService()
 
     fastapi_app.router.on_startup.clear()
     fastapi_app.dependency_overrides[get_ops_service] = lambda: ops_service
     fastapi_app.dependency_overrides[get_llm_provider] = lambda: llm
     fastapi_app.dependency_overrides[get_rag_pipeline] = lambda: pipeline
+    fastapi_app.dependency_overrides[get_automation_service] = lambda: automation_service
 
     with TestClient(fastapi_app) as test_client:
-        yield test_client, ops_service, pipeline, fake_db
+        yield test_client, ops_service, pipeline, fake_db, automation_service
 
     fastapi_app.dependency_overrides.clear()
 
@@ -135,7 +163,7 @@ def test_ops_dashboard_endpoint(client):
 
 
 def test_ops_checklist_endpoint(client):
-    test_client, ops_service, _, _ = client
+    test_client, ops_service, _, _, _ = client
     resp = test_client.post(
         "/ops/checklist",
         json={
@@ -159,7 +187,7 @@ def test_op_generated_tasks_endpoint(client):
 
 
 def test_rag_ingest_and_query(client):
-    test_client, _, pipeline, _ = client
+    test_client, _, pipeline, _, _ = client
     ingest = test_client.post("/rag/ingest", json={"texts": ["hello", "world"]})
     assert ingest.status_code == 200
     assert pipeline.ensure_called == 1
@@ -172,7 +200,7 @@ def test_rag_ingest_and_query(client):
 
 
 def test_admin_logs_endpoint(client):
-    test_client, _, _, fake_db = client
+    test_client, _, _, fake_db, _ = client
     fake_db["rows"] = [
         (1, "http://test/route", datetime(2024, 1, 1, 12, 0, 0))
     ]
@@ -181,3 +209,26 @@ def test_admin_logs_endpoint(client):
     payload = resp.json()
     assert payload["items"][0]["route"] == "http://test/route"
     assert payload["limit"] == 50
+
+
+def test_automation_endpoints(client):
+    test_client, *_ = client
+    suggest = test_client.post(
+        "/ops/automation/suggest",
+        json={"focus": "sedation readiness", "count": 1},
+    )
+    assert suggest.status_code == 200
+    body = suggest.json()
+    assert body["suggestions"][0]["title"] == "Automate sedation prep"
+
+    approve = test_client.post(
+        "/ops/automation/implement",
+        json={
+            "title": "Automate sedation prep",
+            "problem": "Manual",
+            "automation": "Use FastAPI job",
+            "impact": "Less work",
+        },
+    )
+    assert approve.status_code == 200
+    assert approve.json()["id"] == 7

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 class HealthResponse(BaseModel):
     status: str
@@ -120,4 +120,37 @@ class OpsGeneratedTask(BaseModel):
     owner: str
     due_at: Optional[str]
     status: str
+    created_at: Optional[str]
+
+
+class AutomationSuggestionItem(BaseModel):
+    title: str
+    problem: str
+    automation: str
+    impact: str
+    confidence: Optional[str] = None
+
+
+class AutomationSuggestionRequest(BaseModel):
+    focus: str
+    count: int = Field(default=3, ge=1, le=8)
+
+
+class AutomationSuggestionResponse(BaseModel):
+    suggestions: List[AutomationSuggestionItem]
+
+
+class AutomationImplementRequest(BaseModel):
+    title: str
+    problem: str
+    automation: str
+    impact: Optional[str] = None
+    confidence: Optional[str] = None
+
+
+class AutomationImplementationPlan(BaseModel):
+    id: int
+    title: str
+    status: str
+    implementation_plan: Dict[str, Any]
     created_at: Optional[str]

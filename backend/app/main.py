@@ -1,7 +1,7 @@
 import logging
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import health, llm, rag, admin, rag_chat, ops
+from .routers import health, llm, rag, admin, rag_chat, ops, automation
 from .storage.db import get_conn
 from .monitoring.logging import configure_logging
 from psycopg2.extras import Json
@@ -36,6 +36,7 @@ app.include_router(rag.router)
 app.include_router(admin.router)
 app.include_router(rag_chat.router)
 app.include_router(ops.router)
+app.include_router(automation.router)
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):

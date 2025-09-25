@@ -111,6 +111,7 @@ Highlights:
 | Ask grounded questions | `/chat` or `POST /rag/query` | Metadata-tagged snippets + prompt encourage structured answers. |
 | Monitor operations | `/ops` | Sedation trend chart, follow-up queue, generated tasks, inventory alerts, checklist generator. |
 | Automate follow-ups | `/ops/checklist` | LLM output logged to `ops_generated_tasks`; view via `/ops/generated-tasks`. |
+| Discover automation ideas | `POST /ops/automation/suggest` | Surfaces high-impact automations with confidence scores from the LLM. |
 | Upload runbooks | `/upload` UI | Accepts `.md`, `.txt`, `.json`; ingestion script logs doc count + HTTP status. |
 | Extend mock data | `scripts/mock_docs/` | Includes pre-op protocol, anesthesia emergency SOP, inventory guide, post-op checklist, sedation event log. Add more & rerun ingest. |
 | Inspect usage | `/admin` | Postgres-backed request log, updated by every request middleware call. |
@@ -160,5 +161,7 @@ Highlights:
 - **Checklist task routing** – Extend `ops_generated_tasks` with assignment/resolution endpoints and surface them in the UI card.
 - **Evaluations** – Script golden questions & nightly regression tests to guard prompt changes.
 - **Integrations** – Hook into actual inventory APIs or patient CRMs once moving beyond mock data.
+- **Automation blueprints** – Approve ideas with `POST /ops/automation/implement` to persist LLM-generated rollout plans in Postgres.
+- **Bulk ingestion** – Generate synthetic docs with `python scripts/generate_docs.py --count 500` before running `scripts/ingest.py` to stress-test Qdrant and retrieval quality.
 
 Everything runs in Docker and is instrumented for debugging. Clone, follow the quickstart steps, and you can walk interviewers through a realistic AI ops hub with detailed talking points on decisions and solutions.

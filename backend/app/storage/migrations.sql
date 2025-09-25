@@ -15,3 +15,12 @@ CREATE TABLE IF NOT EXISTS ops_generated_tasks (
   status TEXT DEFAULT 'pending',
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS ops_automation_blueprints (
+  id SERIAL PRIMARY KEY,
+  title TEXT NOT NULL,
+  summary TEXT,
+  implementation_plan JSONB,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);

@@ -9,3 +9,4 @@ frontend/node_modules/
 backend/.venv/
 *.log
 .DS_Store
+scripts/bulk_docs/

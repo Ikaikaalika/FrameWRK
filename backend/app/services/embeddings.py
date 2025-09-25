@@ -35,17 +35,23 @@ class EmbeddingsService:
         # Try Ollama (works great on macOS) and fall back to a deterministic hashing embed if it's unavailable.
         try:
             async with httpx.AsyncClient(timeout=60.0) as client:
-                r = await client.post(
-                    f"{self.ollama_base}/api/embeddings",
-                    json={
-                        "model": os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text"),
-                        "prompt": texts if len(texts) > 1 else texts[0]
-                    }
-                )
-                r.raise_for_status()
-                data = r.json()
-                vecs = data.get("embeddings") or [data.get("embedding")]
-                embeddings = np.array(vecs, dtype="float32")
+                model = os.getenv("OLLAMA_EMBED_MODEL", "nomic-embed-text")
+                vectors: list[list[float]] = []
+                for text in texts:
+                    r = await client.post(
+                        f"{self.ollama_base}/api/embeddings",
+                        json={
+                            "model": model,
+                            "prompt": text
+                        }
+                    )
+                    r.raise_for_status()
+                    data = r.json()
+                    vec = data.get("embedding") or (data.get("embeddings") or [])[0]
+                    if vec is None:
+                        raise ValueError("ollama embeddings response missing vector")
+                    vectors.append(vec)
+                embeddings = np.array(vectors, dtype="float32")
                 logger.debug("ollama embedding success | dim=%d", embeddings.shape[1])
                 return embeddings
         except httpx.HTTPError as exc:

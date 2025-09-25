@@ -16,81 +16,98 @@ import random
 from datetime import datetime, timezone
 from pathlib import Path
 
-LOCATIONS = [
-    "Salt Lake City Surgery Center",
-    "Phoenix Surgery Center",
-    "Austin Surgery Center",
-    "Denver Surgery Center",
-    "Nashville Surgery Center",
+FACILITIES = [
+    "SLC Implant Center",
+    "Phoenix Surgical Arts",
+    "Austin Regenerative Implant Clinic",
+    "Denver Full Arch Institute",
 ]
 
-STAGES = [
-    "Pre-Op",
-    "Intra-Op",
-    "Post-Op",
-    "Recovery",
+PROCEDURES = [
+    "Full-Arch Immediate Load",
+    "Single Implant Placement",
+    "Sinus Lift + Graft",
+    "All-on-4 Conversion",
 ]
 
-RISKS = ["Low", "Moderate", "High"]
-
-TITLES = [
-    "Sedation Safety Checklist",
-    "Inventory Replenishment SOP",
-    "Digital Guide Verification",
-    "Emergency Response Protocol",
-    "Follow-up Call Script",
-    "Sterilization Audit",
-    "Lab Coordination Workflow",
+DOCUMENT_TYPES = [
+    "Pre-Operative Assessment",
+    "Sedation Consent",
+    "Anesthesia Record",
+    "Post-Operative Discharge",
     "Medication Reconciliation",
+    "Follow-up Outreach Log",
 ]
 
-SCENARIOS = [
-    "Verify IV sedation kit contents, staffing coverage, and patient vitals before induction.",
-    "Stage implant kits and backup abutments while logging serial numbers for compliance.",
-    "Coordinate with lab to confirm digital guide arrival and reprint contingency plans.",
-    "Run pharmacy pickup tracker to ensure antibiotics and pain management meds are in stock.",
-    "Document anesthesia event review process and escalation thresholds for the medical director.",
-    "Maintain sedation trend dashboards with daily snapshots and risk alerts.",
-    "Prep post-op wellness outreach scripts highlighting red-flag symptoms and scheduling steps.",
+CLINICIANS = [
+    "Dr. Leah Chen",
+    "Dr. Marcus Reed",
+    "Dr. Priya Desai",
+    "Dr. James Holloway",
 ]
 
-FOLLOW_UPS = [
-    "Schedule 24-hour sedation safety check-in and track in CRM.",
-    "Escalate low inventory alerts to supply chain coordinator within 2 hours.",
-    "Create automation to reconcile lab shipment statuses nightly.",
-    "Automate medication refill reminders based on sedation schedule.",
+ANESTHESIA_NOTES = [
+    "Patient maintained stable vitals through induction; BIS between 55-60."
+    " Prophylactic ondansetron administered pre-induction.",
+    "Airway secured with nasal intubation; minimal bleeding; suction every 5 minutes.",
+    "Documented ASA II with mild hypertension; lab results attached in chart."
+]
+
+POST_OP_INSTRUCTIONS = [
+    "Prescribe amoxicillin 500mg TID for 7 days; call if allergic reaction occurs.",
+    "Issue liquid diet plan for 48 hours; no smoking or using straws." 
+    " Provide detailed saline rinse schedule.",
+    "Schedule follow-up CBCT at 48 hours; monitor swelling via patient-submitted photos.",
+]
+
+FOLLOW_UP_AUTOMATIONS = [
+    "Automate text reminders for medication adherence with secure confirmation capture.",
+    "Generate nursing task if pain score > 6 reported via patient app check-in.",
+    "Sync sedation event logs to analytics dashboard for daily anesthesia review.",
+    "Auto-create labs follow-up checklist to ensure biopsy results delivered within 72 hours.",
 ]
 
 
 def build_document(idx: int) -> str:
-    title = random.choice(TITLES)
-    location = random.choice(LOCATIONS)
-    stage = random.choice(STAGES)
-    risk = random.choices(RISKS, weights=[0.4, 0.4, 0.2])[0]
-    scenario = random.choice(SCENARIOS)
-    follow_up = random.choice(FOLLOW_UPS)
+    facility = random.choice(FACILITIES)
+    procedure = random.choice(PROCEDURES)
+    doc_type = random.choice(DOCUMENT_TYPES)
+    clinician = random.choice(CLINICIANS)
+    anesthesia_note = random.choice(ANESTHESIA_NOTES)
+    discharge_note = random.choice(POST_OP_INSTRUCTIONS)
+    automation = random.choice(FOLLOW_UP_AUTOMATIONS)
     timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
-    body = f"""Title: {title} #{idx:04d}
-Location: {location}
-Procedure Stage: {stage}
-Risk Level: {risk}
+    body = f"""Title: {doc_type} — Case {idx:04d}
+Facility: {facility}
+Procedure: {procedure}
+Attending Clinician: {clinician}
 
-Scenario Overview
------------------
-{scenario}
+Patient Intake Details
+----------------------
+- Allergies: None reported
+- ASA Classification: II
+- Pre-op BP: 132/84 mmHg
+- Last meal > 8 hours ago
 
-Automation Ideas
-----------------
-- Use sensor telemetry to auto-flag sedation kit gaps before morning huddles.
-- Generate checklist variants tailored to {location.split()[0]}'s staffing constraints.
-- Trigger inventory reorder tickets when on-hand counts drop below thresholds.
+Intraoperative Summary
+----------------------
+- Anesthesia Notes: {anesthesia_note}
+- Implant batch number recorded in sterilization log.
+- Chairside assistant completed instrument counts (see attached checklist).
+- Labs dispatched for provisional fabrication at 09:45.
 
-Follow-up Actions
------------------
-- {follow_up}
-- Record automation performance metrics weekly (success rate, manual overrides).
-- Update analytics dashboard with {risk.lower()}-risk patient markers.
+Discharge & Follow-up Plan
+--------------------------
+- {discharge_note}
+- Provide emergency on-call number and sedation safety triage guide.
+- Document pain score via patient app at 12h/24h intervals.
+
+Automation Opportunities
+------------------------
+- {automation}
+- Flag charts missing signed sedation consent before case closeout.
+- Auto-upload anesthesia flowsheet snapshots to compliance archive.
 
 Document generated at {timestamp}.
 """
